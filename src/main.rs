@@ -3,6 +3,7 @@ use serde::{Deserialize, Serialize};
 
 use std::env;
 use std::fs;
+use std::time::Duration;
 
 mod cli;
 
@@ -71,6 +72,7 @@ fn view_labels(owner: &str, repo: &str) -> Result<(), Box<dyn std::error::Error>
         Err(e) => e.to_string(),
     };
 
+    let timeout = Duration::new(5, 0);
     let request_url = format!(
         "https://api.github.com/repos/{owner}/{repo}/labels",
         owner = owner,
@@ -79,18 +81,19 @@ fn view_labels(owner: &str, repo: &str) -> Result<(), Box<dyn std::error::Error>
 
     let response = reqwest::blocking::Client::new()
         .get(request_url)
+        .timeout(timeout)
         .basic_auth(token, Some(AUTH_HEADER))
         .header(ACCEPT, "application/vnd.github.v3+json")
         .header(USER_AGENT, "labels")
         .send()?;
 
-    if response.status().is_success() {
-        let labels: Vec<Label> = response.json()?;
-        let pretty = serde_json::to_string_pretty(&labels)?;
-        println!("{}", pretty);
-    } else {
-        eprintln!("{:?} failure", response);
+    if !response.status().is_success() {
+        panic!("Error: status code {}", response.status());
     }
+
+    let labels: Vec<Label> = response.json()?;
+    let pretty = serde_json::to_string_pretty(&labels)?;
+    println!("{}", pretty);
 
     Ok(())
 }
