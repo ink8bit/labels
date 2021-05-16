@@ -1,5 +1,4 @@
 use reqwest::header::{ACCEPT, USER_AGENT};
-// use reqwest::Error;
 use serde::{Deserialize, Serialize};
 
 use std::env;
