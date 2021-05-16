@@ -1,13 +1,12 @@
 use reqwest::header::{ACCEPT, USER_AGENT};
-use serde::{Deserialize, Serialize};
 
 use std::env;
-use std::fs;
 use std::time::Duration;
 
 mod cli;
+mod config;
 
-const CONFIG_FILE: &str = ".labelsrc.json";
+use config::{Config, Label};
 
 fn main() {
     let args = cli::args();
@@ -30,37 +29,6 @@ fn main() {
 
     if update {
         todo!();
-    }
-}
-#[derive(Deserialize, Serialize, Debug)]
-struct Label {
-    name: String,
-    description: String,
-    color: String,
-}
-#[derive(Deserialize, Debug)]
-struct Config {
-    repo: String,
-    owner: String,
-    labels: Vec<Label>,
-}
-
-impl Config {
-    fn new() -> Result<Self, std::io::Error> {
-        let config = Self::parse()?;
-
-        Ok(Self {
-            repo: config.repo,
-            owner: config.owner,
-            labels: config.labels,
-        })
-    }
-
-    fn parse() -> Result<Config, std::io::Error> {
-        let config_data = fs::read_to_string(CONFIG_FILE)?;
-        let config: Config = serde_json::from_str(&config_data)?;
-
-        Ok(config)
     }
 }
 
