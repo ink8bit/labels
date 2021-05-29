@@ -1,7 +1,6 @@
 use reqwest::header::{ACCEPT, USER_AGENT};
 
-use std::env;
-use std::time::Duration;
+use std::{env, error::Error, time::Duration};
 
 use crate::label::Label;
 
@@ -15,7 +14,7 @@ fn get_token<'a>() -> Result<String, &'a str> {
     Ok(token)
 }
 
-fn labels(owner: &str, repo: &str) -> Result<Vec<Label>, Box<dyn std::error::Error>> {
+fn labels(owner: &str, repo: &str) -> Result<Vec<Label>, Box<dyn Error>> {
     let token = match get_token() {
         Ok(v) => v,
         Err(e) => e.to_string(),
@@ -45,7 +44,7 @@ fn labels(owner: &str, repo: &str) -> Result<Vec<Label>, Box<dyn std::error::Err
     Ok(labels)
 }
 
-pub(crate) fn print_labels(owner: &str, repo: &str) -> Result<(), Box<dyn std::error::Error>> {
+pub(crate) fn print_labels(owner: &str, repo: &str) -> Result<(), Box<dyn Error>> {
     let labels = labels(owner, repo)?;
     let pretty = serde_json::to_string_pretty(&labels)?;
     println!("{}", pretty);
@@ -53,6 +52,6 @@ pub(crate) fn print_labels(owner: &str, repo: &str) -> Result<(), Box<dyn std::e
     Ok(())
 }
 
-pub(crate) fn update_labels() -> Result<(), Box<dyn std::error::Error>> {
+pub(crate) fn update_labels(owner: &str, repo: &str) -> Result<(), Box<dyn Error>> {
     todo!();
 }
