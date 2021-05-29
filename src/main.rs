@@ -18,13 +18,15 @@ fn main() {
     let owner = config.owner;
 
     if list {
+        println!("Labels in repo {}", repo);
         if let Err(e) = github::print_labels(&owner, &repo) {
             panic!("{}", e);
         }
     }
 
     if update {
-        if let Err(e) = github::update_labels(&owner, &repo) {
+        println!("Updating labels in repo {}", repo);
+        if let Err(e) = github::update_labels(&owner, &repo, &config.labels) {
             panic!("{}", e);
         }
     }
