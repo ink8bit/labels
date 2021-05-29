@@ -1,15 +1,10 @@
-use serde::{Deserialize, Serialize};
-
+use serde::Deserialize;
 use std::fs;
+
+use super::Label;
 
 const CONFIG_FILE: &str = ".labelsrc.json";
 
-#[derive(Deserialize, Serialize, Debug)]
-pub(crate) struct Label {
-    name: String,
-    description: String,
-    color: String,
-}
 #[derive(Deserialize, Debug)]
 pub(crate) struct Config {
     pub(crate) repo: String,
