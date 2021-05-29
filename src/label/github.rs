@@ -7,7 +7,15 @@ use crate::label::Label;
 
 const AUTH_HEADER: &str = "x-oauth-basic";
 
-pub(crate) fn view_labels(owner: &str, repo: &str) -> Result<(), Box<dyn std::error::Error>> {
+fn get_token<'a>() -> Result<String, &'a str> {
+    let token = env::var("LABELS_TOKEN").unwrap_or_default();
+    if token.is_empty() {
+        return Err("Token not found");
+    }
+    Ok(token)
+}
+
+fn labels(owner: &str, repo: &str) -> Result<Vec<Label>, Box<dyn std::error::Error>> {
     let token = match get_token() {
         Ok(v) => v,
         Err(e) => e.to_string(),
@@ -33,16 +41,18 @@ pub(crate) fn view_labels(owner: &str, repo: &str) -> Result<(), Box<dyn std::er
     }
 
     let labels: Vec<Label> = response.json()?;
+
+    Ok(labels)
+}
+
+pub(crate) fn print_labels(owner: &str, repo: &str) -> Result<(), Box<dyn std::error::Error>> {
+    let labels = labels(owner, repo)?;
     let pretty = serde_json::to_string_pretty(&labels)?;
     println!("{}", pretty);
 
     Ok(())
 }
 
-fn get_token<'a>() -> Result<String, &'a str> {
-    let token = env::var("LABELS_TOKEN").unwrap_or_default();
-    if token.is_empty() {
-        return Err("Token not found");
-    }
-    Ok(token)
+pub(crate) fn update_labels() -> Result<(), Box<dyn std::error::Error>> {
+    todo!();
 }

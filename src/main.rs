@@ -18,7 +18,7 @@ fn main() {
     let owner = config.owner;
 
     if list {
-        if let Err(e) = github::view_labels(&owner, &repo) {
+        if let Err(e) = github::print_labels(&owner, &repo) {
             panic!("{}", e);
         }
     }
