@@ -24,6 +24,8 @@ fn main() {
     }
 
     if update {
-        todo!();
+        if let Err(e) = github::update_labels(&owner, &repo) {
+            panic!("{}", e);
+        }
     }
 }
