@@ -8,6 +8,7 @@ const AUTH_HEADER: &str = "x-oauth-basic";
 const ACCEPT_HEADER: &str = "application/vnd.github.v3+json";
 const USER_AGENT_HEADER: &str = "labels";
 const API_URL: &str = "https://api.github.com";
+const LABELS_TOKEN: &str = "LABELS_TOKEN";
 
 #[derive(Debug)]
 pub(crate) enum LabelsError {
@@ -45,7 +46,7 @@ impl From<serde_json::Error> for LabelsError {
 }
 
 fn get_token<'a>() -> Result<String, &'a str> {
-    let token = env::var("LABELS_TOKEN").unwrap_or_default();
+    let token = env::var(LABELS_TOKEN).unwrap_or_default();
     if token.is_empty() {
         return Err("Token not found");
     }
