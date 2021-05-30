@@ -6,6 +6,7 @@ use crate::label::Label;
 
 const AUTH_HEADER: &str = "x-oauth-basic";
 const ACCEPT_HEADER: &str = "application/vnd.github.v3+json";
+const USER_AGENT_HEADER: &str = "labels";
 
 #[derive(Debug)]
 pub(crate) enum LabelsError {
@@ -68,7 +69,7 @@ fn labels(owner: &str, repo: &str) -> Result<Vec<Label>, LabelsError> {
         .timeout(timeout)
         .basic_auth(token, Some(AUTH_HEADER))
         .header(ACCEPT, ACCEPT_HEADER)
-        .header(USER_AGENT, "labels")
+        .header(USER_AGENT, USER_AGENT_HEADER)
         .send()?;
 
     if response.status() != reqwest::StatusCode::OK {
@@ -131,7 +132,7 @@ fn create_label(owner: &str, repo: &str, label: &Label) -> Result<(), LabelsErro
         .timeout(timeout)
         .basic_auth(token, Some(AUTH_HEADER))
         .header(ACCEPT, ACCEPT_HEADER)
-        .header(USER_AGENT, "labels")
+        .header(USER_AGENT, USER_AGENT_HEADER)
         .send()?;
 
     if response.status() != reqwest::StatusCode::CREATED {
@@ -160,7 +161,7 @@ fn delete_label(owner: &str, repo: &str, name: &str) -> Result<(), LabelsError> 
         .timeout(timeout)
         .basic_auth(token, Some(AUTH_HEADER))
         .header(ACCEPT, ACCEPT_HEADER)
-        .header(USER_AGENT, "labels")
+        .header(USER_AGENT, USER_AGENT_HEADER)
         .send()?;
 
     if response.status() != reqwest::StatusCode::NO_CONTENT {
