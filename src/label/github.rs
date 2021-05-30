@@ -7,6 +7,7 @@ use crate::label::Label;
 const AUTH_HEADER: &str = "x-oauth-basic";
 const ACCEPT_HEADER: &str = "application/vnd.github.v3+json";
 const USER_AGENT_HEADER: &str = "labels";
+const API_URL: &str = "https://api.github.com";
 
 #[derive(Debug)]
 pub(crate) enum LabelsError {
@@ -59,7 +60,8 @@ fn labels(owner: &str, repo: &str) -> Result<Vec<Label>, LabelsError> {
 
     let timeout = Duration::new(5, 0);
     let request_url = format!(
-        "https://api.github.com/repos/{owner}/{repo}/labels",
+        "{base_url}/repos/{owner}/{repo}/labels",
+        base_url = API_URL,
         owner = owner,
         repo = repo,
     );
@@ -121,7 +123,8 @@ fn create_label(owner: &str, repo: &str, label: &Label) -> Result<(), LabelsErro
 
     let timeout = Duration::new(5, 0);
     let request_url = format!(
-        "https://api.github.com/repos/{owner}/{repo}/labels",
+        "{base_url}/repos/{owner}/{repo}/labels",
+        base_url = API_URL,
         owner = owner,
         repo = repo,
     );
@@ -150,7 +153,8 @@ fn delete_label(owner: &str, repo: &str, name: &str) -> Result<(), LabelsError> 
 
     let timeout = Duration::new(5, 0);
     let request_url = format!(
-        "https://api.github.com/repos/{owner}/{repo}/labels/{name}",
+        "{base_url}/repos/{owner}/{repo}/labels/{name}",
+        base_url = API_URL,
         owner = owner,
         repo = repo,
         name = name,
