@@ -1,10 +1,45 @@
 use reqwest::header::{ACCEPT, USER_AGENT};
 
-use std::{env, error::Error, time::Duration};
+use std::{env, fmt, time::Duration};
 
 use crate::label::Label;
 
 const AUTH_HEADER: &str = "x-oauth-basic";
+
+#[derive(Debug)]
+pub(crate) enum LabelsError {
+    InvalidResponse,
+    Http,
+    JsonSerialization,
+    GitHubLabelCreate,
+    GitHubLabelDelete,
+}
+
+impl std::error::Error for LabelsError {}
+
+impl fmt::Display for LabelsError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            LabelsError::Http => write!(f, "HTTP error"),
+            LabelsError::InvalidResponse => write!(f, "Invalid response"),
+            LabelsError::JsonSerialization => write!(f, "Could not serialize labels data"),
+            LabelsError::GitHubLabelCreate => write!(f, "Could not create a label"),
+            LabelsError::GitHubLabelDelete => write!(f, "Could not delete a label"),
+        }
+    }
+}
+
+impl From<reqwest::Error> for LabelsError {
+    fn from(_: reqwest::Error) -> Self {
+        LabelsError::Http
+    }
+}
+
+impl From<serde_json::Error> for LabelsError {
+    fn from(_: serde_json::Error) -> Self {
+        LabelsError::JsonSerialization
+    }
+}
 
 fn get_token<'a>() -> Result<String, &'a str> {
     let token = env::var("LABELS_TOKEN").unwrap_or_default();
@@ -14,7 +49,7 @@ fn get_token<'a>() -> Result<String, &'a str> {
     Ok(token)
 }
 
-fn labels(owner: &str, repo: &str) -> Result<Vec<Label>, Box<dyn Error>> {
+fn labels(owner: &str, repo: &str) -> Result<Vec<Label>, LabelsError> {
     let token = match get_token() {
         Ok(v) => v,
         Err(e) => e.to_string(),
@@ -35,8 +70,8 @@ fn labels(owner: &str, repo: &str) -> Result<Vec<Label>, Box<dyn Error>> {
         .header(USER_AGENT, "labels")
         .send()?;
 
-    if !response.status().is_success() {
-        panic!("Error: status code {}", response.status());
+    if response.status() != reqwest::StatusCode::OK {
+        return Err(LabelsError::InvalidResponse);
     }
 
     let labels: Vec<Label> = response.json()?;
@@ -44,7 +79,7 @@ fn labels(owner: &str, repo: &str) -> Result<Vec<Label>, Box<dyn Error>> {
     Ok(labels)
 }
 
-pub(crate) fn print_labels(owner: &str, repo: &str) -> Result<(), Box<dyn Error>> {
+pub(crate) fn print_labels(owner: &str, repo: &str) -> Result<(), LabelsError> {
     let labels = labels(owner, repo)?;
     let pretty = serde_json::to_string_pretty(&labels)?;
     println!("{}", pretty);
@@ -56,27 +91,27 @@ pub(crate) fn update_labels(
     owner: &str,
     repo: &str,
     labels_from_config: &Vec<Label>,
-) -> Result<(), Box<dyn Error>> {
+) -> Result<(), LabelsError> {
     let labels = labels(owner, repo)?;
 
     if !labels.is_empty() {
         for label in labels {
-            if let Err(e) = delete_label(owner, repo, &label.name) {
-                eprintln!("Error while deleting a label: {}\n{}", label.name, e);
+            if let Err(_) = delete_label(owner, repo, &label.name) {
+                return Err(LabelsError::GitHubLabelDelete);
             }
         }
     }
 
     for label in labels_from_config {
-        if let Err(e) = create_label(owner, repo, label) {
-            eprintln!("Error while creating a label: {}\n{}", label.name, e);
+        if let Err(_) = create_label(owner, repo, label) {
+            return Err(LabelsError::GitHubLabelCreate);
         }
     }
 
     Ok(())
 }
 
-fn create_label(owner: &str, repo: &str, label: &Label) -> Result<(), Box<dyn Error>> {
+fn create_label(owner: &str, repo: &str, label: &Label) -> Result<(), LabelsError> {
     let token = match get_token() {
         Ok(v) => v,
         Err(e) => e.to_string(),
@@ -98,14 +133,14 @@ fn create_label(owner: &str, repo: &str, label: &Label) -> Result<(), Box<dyn Er
         .header(USER_AGENT, "labels")
         .send()?;
 
-    if !response.status().is_success() {
-        panic!("Error: status code {}", response.status());
+    if response.status() != reqwest::StatusCode::CREATED {
+        return Err(LabelsError::GitHubLabelCreate);
     }
 
     Ok(())
 }
 
-fn delete_label(owner: &str, repo: &str, name: &str) -> Result<(), Box<dyn Error>> {
+fn delete_label(owner: &str, repo: &str, name: &str) -> Result<(), LabelsError> {
     let token = match get_token() {
         Ok(v) => v,
         Err(e) => e.to_string(),
@@ -127,8 +162,8 @@ fn delete_label(owner: &str, repo: &str, name: &str) -> Result<(), Box<dyn Error
         .header(USER_AGENT, "labels")
         .send()?;
 
-    if !response.status().is_success() {
-        panic!("Error: status code {}", response.status());
+    if response.status() != reqwest::StatusCode::NO_CONTENT {
+        return Err(LabelsError::GitHubLabelDelete);
     }
 
     Ok(())
