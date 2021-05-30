@@ -5,6 +5,7 @@ use std::{env, fmt, time::Duration};
 use crate::label::Label;
 
 const AUTH_HEADER: &str = "x-oauth-basic";
+const ACCEPT_HEADER: &str = "application/vnd.github.v3+json";
 
 #[derive(Debug)]
 pub(crate) enum LabelsError {
@@ -66,7 +67,7 @@ fn labels(owner: &str, repo: &str) -> Result<Vec<Label>, LabelsError> {
         .get(request_url)
         .timeout(timeout)
         .basic_auth(token, Some(AUTH_HEADER))
-        .header(ACCEPT, "application/vnd.github.v3+json")
+        .header(ACCEPT, ACCEPT_HEADER)
         .header(USER_AGENT, "labels")
         .send()?;
 
@@ -129,7 +130,7 @@ fn create_label(owner: &str, repo: &str, label: &Label) -> Result<(), LabelsErro
         .json(&label)
         .timeout(timeout)
         .basic_auth(token, Some(AUTH_HEADER))
-        .header(ACCEPT, "application/vnd.github.v3+json")
+        .header(ACCEPT, ACCEPT_HEADER)
         .header(USER_AGENT, "labels")
         .send()?;
 
@@ -158,7 +159,7 @@ fn delete_label(owner: &str, repo: &str, name: &str) -> Result<(), LabelsError> 
         .delete(request_url)
         .timeout(timeout)
         .basic_auth(token, Some(AUTH_HEADER))
-        .header(ACCEPT, "application/vnd.github.v3+json")
+        .header(ACCEPT, ACCEPT_HEADER)
         .header(USER_AGENT, "labels")
         .send()?;
 
