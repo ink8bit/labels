@@ -1,6 +1,11 @@
-use reqwest::header::{ACCEPT, USER_AGENT};
+use reqwest::header::{self, ACCEPT, USER_AGENT};
+use reqwest::Client;
 
-use std::{env, fmt, time::Duration};
+use std::{
+    env::{self, VarError},
+    fmt,
+    time::Duration,
+};
 
 use crate::label::Label;
 
@@ -12,6 +17,7 @@ const LABELS_TOKEN: &str = "LABELS_TOKEN";
 
 #[derive(Debug)]
 pub(crate) enum LabelsError {
+    NoTokenValue,
     InvalidResponse,
     Http,
     JsonSerialization,
@@ -29,6 +35,7 @@ impl fmt::Display for LabelsError {
             LabelsError::JsonSerialization => write!(f, "Could not serialize labels data"),
             LabelsError::GitHubLabelCreate => write!(f, "Could not create a label"),
             LabelsError::GitHubLabelDelete => write!(f, "Could not delete a label"),
+            LabelsError::NoTokenValue => write!(f, "Could not get a token from LABELS_TOKEN env. Make sure you set LABELS_TOKEN env variable."),
         }
     }
 }
@@ -45,133 +52,147 @@ impl From<serde_json::Error> for LabelsError {
     }
 }
 
-fn get_token<'a>() -> Result<String, &'a str> {
-    let token = env::var(LABELS_TOKEN).unwrap_or_default();
-    if token.is_empty() {
-        return Err("Token not found");
+impl From<VarError> for LabelsError {
+    fn from(_: VarError) -> Self {
+        LabelsError::NoTokenValue
     }
-    Ok(token)
 }
 
-fn labels(owner: &str, repo: &str) -> Result<Vec<Label>, LabelsError> {
-    let token = match get_token() {
-        Ok(v) => v,
-        Err(e) => e.to_string(),
-    };
+pub(crate) struct GitHub<'a> {
+    owner: &'a str,
+    repo: &'a str,
+}
 
-    let timeout = Duration::new(5, 0);
-    let request_url = format!(
-        "{base_url}/repos/{owner}/{repo}/labels",
-        base_url = API_URL,
-        owner = owner,
-        repo = repo,
-    );
-
-    let response = reqwest::blocking::Client::new()
-        .get(request_url)
-        .timeout(timeout)
-        .basic_auth(token, Some(AUTH_HEADER))
-        .header(ACCEPT, ACCEPT_HEADER)
-        .header(USER_AGENT, USER_AGENT_HEADER)
-        .send()?;
-
-    if response.status() != reqwest::StatusCode::OK {
-        return Err(LabelsError::InvalidResponse);
+impl<'a> GitHub<'a> {
+    pub(crate) fn new(owner: &'a str, repo: &'a str) -> Self {
+        Self { owner, repo }
     }
 
-    let labels: Vec<Label> = response.json()?;
+    fn client() -> Result<Client, reqwest::Error> {
+        let timeout = Duration::from_secs(3);
 
-    Ok(labels)
-}
+        let mut headers = header::HeaderMap::new();
+        headers.insert(ACCEPT, header::HeaderValue::from_static(ACCEPT_HEADER));
+        headers.insert(
+            USER_AGENT,
+            header::HeaderValue::from_static(USER_AGENT_HEADER),
+        );
 
-pub(crate) fn print_labels(owner: &str, repo: &str) -> Result<(), LabelsError> {
-    let labels = labels(owner, repo)?;
-    let pretty = serde_json::to_string_pretty(&labels)?;
-    println!("{}", pretty);
+        let client = reqwest::Client::builder()
+            .timeout(timeout)
+            .default_headers(headers)
+            .build()?;
 
-    Ok(())
-}
+        Ok(client)
+    }
 
-pub(crate) fn update_labels(
-    owner: &str,
-    repo: &str,
-    labels_from_config: &Vec<Label>,
-) -> Result<(), LabelsError> {
-    let labels = labels(owner, repo)?;
+    async fn labels(&self) -> Result<Vec<Label>, LabelsError> {
+        let token = env::var(LABELS_TOKEN)?;
 
-    if !labels.is_empty() {
-        for label in labels {
-            if let Err(_) = delete_label(owner, repo, &label.name) {
-                return Err(LabelsError::GitHubLabelDelete);
-            }
+        let request_url = format!(
+            "{base_url}/repos/{owner}/{repo}/labels",
+            base_url = API_URL,
+            owner = self.owner,
+            repo = self.repo,
+        );
+
+        let client = GitHub::client()?;
+
+        let response = client
+            .get(request_url)
+            .basic_auth(token, Some(AUTH_HEADER))
+            .send()
+            .await?;
+
+        if response.status() != reqwest::StatusCode::OK {
+            return Err(LabelsError::InvalidResponse);
         }
+
+        let labels: Vec<Label> = response.json().await?;
+
+        Ok(labels)
     }
 
-    for label in labels_from_config {
-        if let Err(_) = create_label(owner, repo, label) {
+    pub(crate) async fn print_labels(&self) -> Result<(), LabelsError> {
+        let labels = Self::labels(&self).await?;
+        let pretty = serde_json::to_string_pretty(&labels)?;
+        println!("{}", pretty);
+
+        Ok(())
+    }
+
+    async fn create_label(&self, label: &Label) -> Result<(), LabelsError> {
+        let token = env::var(LABELS_TOKEN)?;
+
+        let request_url = format!(
+            "{base_url}/repos/{owner}/{repo}/labels",
+            base_url = API_URL,
+            owner = self.owner,
+            repo = self.repo,
+        );
+
+        let client = GitHub::client()?;
+
+        let response = client
+            .post(request_url)
+            .json(&label)
+            .basic_auth(token, Some(AUTH_HEADER))
+            .send()
+            .await?;
+
+        if response.status() != reqwest::StatusCode::CREATED {
             return Err(LabelsError::GitHubLabelCreate);
         }
+
+        Ok(())
     }
 
-    Ok(())
-}
+    async fn delete_label(&self, name: &str) -> Result<(), LabelsError> {
+        let token = env::var(LABELS_TOKEN)?;
 
-fn create_label(owner: &str, repo: &str, label: &Label) -> Result<(), LabelsError> {
-    let token = match get_token() {
-        Ok(v) => v,
-        Err(e) => e.to_string(),
-    };
+        let request_url = format!(
+            "{base_url}/repos/{owner}/{repo}/labels/{name}",
+            base_url = API_URL,
+            owner = self.owner,
+            repo = self.repo,
+            name = name,
+        );
 
-    let timeout = Duration::new(5, 0);
-    let request_url = format!(
-        "{base_url}/repos/{owner}/{repo}/labels",
-        base_url = API_URL,
-        owner = owner,
-        repo = repo,
-    );
+        let client = GitHub::client()?;
 
-    let response = reqwest::blocking::Client::new()
-        .post(request_url)
-        .json(&label)
-        .timeout(timeout)
-        .basic_auth(token, Some(AUTH_HEADER))
-        .header(ACCEPT, ACCEPT_HEADER)
-        .header(USER_AGENT, USER_AGENT_HEADER)
-        .send()?;
+        let response = client
+            .delete(request_url)
+            .basic_auth(token, Some(AUTH_HEADER))
+            .send()
+            .await?;
 
-    if response.status() != reqwest::StatusCode::CREATED {
-        return Err(LabelsError::GitHubLabelCreate);
+        if response.status() != reqwest::StatusCode::NO_CONTENT {
+            return Err(LabelsError::GitHubLabelDelete);
+        }
+
+        Ok(())
     }
 
-    Ok(())
-}
+    pub(crate) async fn update_labels(
+        &self,
+        labels_from_config: &Vec<Label>,
+    ) -> Result<(), LabelsError> {
+        let labels = Self::labels(&self).await?;
 
-fn delete_label(owner: &str, repo: &str, name: &str) -> Result<(), LabelsError> {
-    let token = match get_token() {
-        Ok(v) => v,
-        Err(e) => e.to_string(),
-    };
+        if !labels.is_empty() {
+            for label in labels {
+                if let Err(_) = Self::delete_label(&self, &label.name).await {
+                    return Err(LabelsError::GitHubLabelDelete);
+                }
+            }
+        }
 
-    let timeout = Duration::new(5, 0);
-    let request_url = format!(
-        "{base_url}/repos/{owner}/{repo}/labels/{name}",
-        base_url = API_URL,
-        owner = owner,
-        repo = repo,
-        name = name,
-    );
+        for label in labels_from_config {
+            if let Err(_) = Self::create_label(&self, label).await {
+                return Err(LabelsError::GitHubLabelCreate);
+            }
+        }
 
-    let response = reqwest::blocking::Client::new()
-        .delete(request_url)
-        .timeout(timeout)
-        .basic_auth(token, Some(AUTH_HEADER))
-        .header(ACCEPT, ACCEPT_HEADER)
-        .header(USER_AGENT, USER_AGENT_HEADER)
-        .send()?;
-
-    if response.status() != reqwest::StatusCode::NO_CONTENT {
-        return Err(LabelsError::GitHubLabelDelete);
+        Ok(())
     }
-
-    Ok(())
 }
