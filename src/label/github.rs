@@ -175,20 +175,20 @@ impl<'a> GitHub<'a> {
 
     pub(crate) async fn update_labels(
         &self,
-        labels_from_config: &Vec<Label>,
+        labels_from_config: &[Label],
     ) -> Result<(), LabelsError> {
         let labels = Self::labels(&self).await?;
 
         if !labels.is_empty() {
             for label in labels {
-                if let Err(_) = Self::delete_label(&self, &label.name).await {
+                if Self::delete_label(&self, &label.name).await.is_err() {
                     return Err(LabelsError::GitHubLabelDelete);
                 }
             }
         }
 
         for label in labels_from_config {
-            if let Err(_) = Self::create_label(&self, label).await {
+            if Self::create_label(&self, label).await.is_err() {
                 return Err(LabelsError::GitHubLabelCreate);
             }
         }
