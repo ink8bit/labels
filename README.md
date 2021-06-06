@@ -1,5 +1,7 @@
 # labels
 
+[![Rust](https://github.com/ink8bit/labels/actions/workflows/rust.yml/badge.svg)](https://github.com/ink8bit/labels/actions/workflows/rust.yml)
+
 `labels` is a CLI utility to synchornize your labels in a specific GitHub repo.
 
 ## Setup
