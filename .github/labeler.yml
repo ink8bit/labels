@@ -1,0 +1,27 @@
+# Add `workflow` label to any change in .github/workflows folder
+workflow:
+  - .github/workflows/*
+
+# Add `code owners` label to any change in CODEOWNERS file
+code owners:
+  - .github/CODEOWNERS
+
+# Add `ignore` label to any change in .gitignore
+ignore:
+  - .gitignore
+
+# Add `license` label to any change in LICENSE
+license:
+  - LICENSE
+
+# Add `readme` label to any change in README.md
+readme:
+  - README.md
+
+# Add `crate` label to any change in Cargo.toml
+crate:
+  - Cargo.toml
+
+# Add `lockfile` label to any change in Cargo.lock
+lockfile:
+  - Cargo.lock
