@@ -6,12 +6,16 @@ use label::github::GitHub;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let args = cli::args();
+    let args = cli::app().get_matches();
     let list = args.is_present("list");
     let update = args.is_present("update");
 
-    let config = Config::new()?;
+    if !list || !update {
+        cli::app().print_help()?;
+        return Ok(());
+    }
 
+    let config = Config::new()?;
     let repo = config.repo;
     let owner = config.owner;
 

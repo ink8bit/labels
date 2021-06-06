@@ -1,6 +1,6 @@
-use clap::{crate_authors, crate_description, crate_name, crate_version, App, ArgMatches};
+use clap::{crate_authors, crate_description, crate_name, crate_version, App};
 
-pub(crate) fn args() -> ArgMatches {
+pub(crate) fn app() -> App<'static> {
     App::new(crate_name!())
         .version(crate_version!())
         .about(crate_description!())
@@ -15,5 +15,4 @@ pub(crate) fn args() -> ArgMatches {
                 .version(crate_version!())
                 .about("Updates all labels in current repository"),
         )
-        .get_matches()
 }
