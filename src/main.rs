@@ -10,7 +10,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let list = args.is_present("list");
     let update = args.is_present("update");
 
-    if !list || !update {
+    if !list && !update {
         cli::app().print_help()?;
         return Ok(());
     }
