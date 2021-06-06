@@ -108,7 +108,7 @@ impl<'a> GitHub<'a> {
             return Err(LabelsError::InvalidResponse);
         }
 
-        let labels: Vec<Label> = response.json().await?;
+        let labels = response.json::<Vec<Label>>().await?;
 
         Ok(labels)
     }

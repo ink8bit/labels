@@ -3,7 +3,7 @@ use std::fs;
 
 use super::Label;
 
-const CONFIG_FILE: &str = ".labelsrc.json";
+const CONFIG_FILE: &str = ".labelsrc";
 
 #[derive(Deserialize, Debug)]
 pub(crate) struct Config {
