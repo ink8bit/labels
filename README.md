@@ -2,7 +2,9 @@
 
 `labels` is a CLI utility to synchornize your labels in a specific GitHub repo.
 
-## Config file
+## Setup
+
+### Config file
 
 You should create a configuration file called `.labelsrc` in the root of your project.
 It should be a valid JSON with the following structure:
@@ -25,6 +27,13 @@ It should be a valid JSON with the following structure:
   ]
 }
 ```
+
+### Token
+
+You should create a [personal access token](https://docs.github.com/en/github/authenticating-to-github/keeping-your-account-and-data-secure/creating-a-personal-access-token) using GitHub UI with scope values:
+
+- `repo`
+- `read:user`
 
 ## Usage
 
