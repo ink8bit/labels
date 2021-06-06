@@ -35,6 +35,12 @@ You should create a [personal access token](https://docs.github.com/en/github/au
 - `repo`
 - `read:user`
 
+And export your token as an environment variable in your `.zshrc` (or `.bashrc`):
+
+```shell
+export LABELS_TOKEN="GITHUB_TOKEN_VALUE"
+```
+
 ## Usage
 
 ```console
