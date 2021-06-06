@@ -1,0 +1,56 @@
+{
+  "owner": "ink8bit",
+  "repo": "labels",
+  "labels": [
+    {
+      "name": "bug",
+      "description": "Something isn't working",
+      "color": "d73a4a"
+    },
+    {
+      "name": "code owners",
+      "description": "Code owners updates",
+      "color": "5F37B6"
+    },
+    {
+      "name": "consider",
+      "description": "Considering of implementing it",
+      "color": "4FCCA0"
+    },
+    {
+      "name": "docs",
+      "description": "Improvements or additions to documentation",
+      "color": "0075ca"
+    },
+    {
+      "name": "enhancement",
+      "description": "New feature or request",
+      "color": "a2eeef"
+    },
+    {
+      "name": "stale",
+      "description": "No activity on this issue or pull request",
+      "color": "ededed"
+    },
+    {
+      "name": "workflow",
+      "description": "Workflow files updates",
+      "color": "B3B160"
+    },
+    {
+      "name": "module",
+      "description": "Module files updates",
+      "color": "EE5642"
+    },
+    {
+      "name": "license",
+      "description": "License changes",
+      "color": "1E3C42"
+    },
+    {
+      "name": "gitignore",
+      "description": ".gitignore file changes",
+      "color": "4424E2"
+    }
+  ]
+}
