@@ -69,12 +69,11 @@ impl<'a> GitHub<'a> {
         Ok(labels)
     }
 
-    pub(crate) async fn print_labels(&self) -> Result<(), LabelsError> {
+    pub(crate) async fn print_labels(&self) -> Result<String, LabelsError> {
         let labels = Self::labels(&self).await?;
         let pretty = serde_json::to_string_pretty(&labels)?;
-        println!("{}", pretty);
 
-        Ok(())
+        Ok(pretty)
     }
 
     async fn create_label(&self, label: &Label) -> Result<(), LabelsError> {

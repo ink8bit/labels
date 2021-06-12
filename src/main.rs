@@ -20,16 +20,19 @@ async fn main() {
         Ok(v) => v,
         Err(e) => return eprintln!("{}", e),
     };
+
     let repo = config.repo;
     let owner = config.owner;
 
     let gh = GitHub::new(&owner, &repo);
 
     if list {
-        println!("Labels in repo {}", repo);
-        if let Err(e) = gh.print_labels().await {
-            return eprintln!("{}", e);
-        }
+        match gh.print_labels().await {
+            Ok(labels) => {
+                println!("Labels in repo {}:\n{}", repo, labels);
+            }
+            Err(e) => return eprintln!("{}", e),
+        };
     }
 
     if update {
