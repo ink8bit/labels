@@ -1,4 +1,5 @@
 pub mod config;
+pub mod error;
 pub mod github;
 
 use serde::{Deserialize, Serialize};
