@@ -2,61 +2,17 @@ use reqwest::header::{self, ACCEPT, USER_AGENT};
 use reqwest::Client;
 
 use std::{
-    env::{self, VarError},
-    fmt,
+    env::{self},
     time::Duration,
 };
 
-use crate::label::Label;
+use crate::label::{error::LabelsError, Label};
 
 const AUTH_HEADER: &str = "x-oauth-basic";
 const ACCEPT_HEADER: &str = "application/vnd.github.v3+json";
 const USER_AGENT_HEADER: &str = "labels";
 const API_URL: &str = "https://api.github.com";
 const LABELS_TOKEN: &str = "LABELS_TOKEN";
-
-#[derive(Debug)]
-pub(crate) enum LabelsError {
-    NoTokenValue,
-    InvalidResponse,
-    Http,
-    JsonSerialization,
-    GitHubLabelCreate,
-    GitHubLabelDelete,
-}
-
-impl std::error::Error for LabelsError {}
-
-impl fmt::Display for LabelsError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            LabelsError::Http => write!(f, "HTTP error"),
-            LabelsError::InvalidResponse => write!(f, "Invalid response"),
-            LabelsError::JsonSerialization => write!(f, "Could not serialize labels data"),
-            LabelsError::GitHubLabelCreate => write!(f, "Could not create a label"),
-            LabelsError::GitHubLabelDelete => write!(f, "Could not delete a label"),
-            LabelsError::NoTokenValue => write!(f, "Could not get a token from LABELS_TOKEN env. Make sure you set LABELS_TOKEN env variable."),
-        }
-    }
-}
-
-impl From<reqwest::Error> for LabelsError {
-    fn from(_: reqwest::Error) -> Self {
-        LabelsError::Http
-    }
-}
-
-impl From<serde_json::Error> for LabelsError {
-    fn from(_: serde_json::Error) -> Self {
-        LabelsError::JsonSerialization
-    }
-}
-
-impl From<VarError> for LabelsError {
-    fn from(_: VarError) -> Self {
-        LabelsError::NoTokenValue
-    }
-}
 
 pub(crate) struct GitHub<'a> {
     owner: &'a str,

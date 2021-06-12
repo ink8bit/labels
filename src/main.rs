@@ -5,17 +5,21 @@ use label::config::Config;
 use label::github::GitHub;
 
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
+async fn main() {
     let args = cli::app().get_matches();
     let list = args.is_present("list");
     let update = args.is_present("update");
 
     if !list && !update {
-        cli::app().print_help()?;
-        return Ok(());
+        if let Err(e) = cli::app().print_help() {
+            return eprintln!("{}", e);
+        }
     }
 
-    let config = Config::new()?;
+    let config = match Config::new() {
+        Ok(v) => v,
+        Err(e) => return eprintln!("{}", e),
+    };
     let repo = config.repo;
     let owner = config.owner;
 
@@ -23,13 +27,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     if list {
         println!("Labels in repo {}", repo);
-        gh.print_labels().await?;
+        if let Err(e) = gh.print_labels().await {
+            return eprintln!("{}", e);
+        }
     }
 
     if update {
         println!("Updating labels in repo {}", repo);
-        gh.update_labels(&config.labels).await?;
+        if let Err(e) = gh.update_labels(&config.labels).await {
+            eprintln!("{}", e);
+        }
     }
-
-    Ok(())
 }
