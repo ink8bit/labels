@@ -1,6 +1,8 @@
 mod cli;
 mod label;
 
+use terminal_spinners::{SpinnerBuilder, SpinnerHandle, DOTS};
+
 use label::config::Config;
 use label::github::GitHub;
 
@@ -27,18 +29,45 @@ async fn main() {
     let gh = GitHub::new(&owner, &repo);
 
     if list {
+        let msg = format!("Getting labels from repo '{}'...", repo);
+        let sp = create_spinner(&msg);
+
         match gh.print_labels().await {
             Ok(labels) => {
-                println!("Labels in repo {}:\n{}", repo, labels);
+                let msg = format!("Labels in repo '{}':", repo);
+                sp.text(msg);
+                sp.done();
+                println!("{}", labels);
             }
-            Err(e) => return eprintln!("{}", e),
+            Err(e) => {
+                let err_msg = format!("Error: {}", e).to_string();
+                sp.text(err_msg);
+                sp.error();
+            }
         };
     }
 
     if update {
-        println!("Updating labels in repo {}", repo);
-        if let Err(e) = gh.update_labels(&config.labels).await {
-            eprintln!("{}", e);
+        let msg = format!("Updating labels in repo '{}'", repo);
+        let sp = create_spinner(&msg);
+
+        match gh.update_labels(&config.labels).await {
+            Ok(_) => {
+                let msg = format!("Successfully updated labels in repo '{}'", repo);
+                sp.text(msg);
+                sp.done();
+            }
+            Err(e) => {
+                let err_msg = format!("Error: {}", e).to_string();
+                sp.text(err_msg);
+                sp.error();
+            }
         }
     }
+}
+
+fn create_spinner(msg: &str) -> SpinnerHandle {
+    let formatted = format!(" {}", msg);
+    let sp = SpinnerBuilder::new().spinner(&DOTS).text(formatted).start();
+    sp
 }
