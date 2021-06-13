@@ -64,7 +64,10 @@ impl<'a> GitHub<'a> {
             return Err(LabelsError::InvalidResponse);
         }
 
-        let labels = response.json::<Vec<Label>>().await?;
+        let labels = match response.json::<Vec<Label>>().await {
+            Ok(v) => v,
+            Err(_) => return Err(LabelsError::JsonSerialization),
+        };
 
         Ok(labels)
     }

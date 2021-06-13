@@ -2,17 +2,19 @@ pub mod config;
 pub mod error;
 pub mod github;
 
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Deserializer, Serialize};
 
 #[derive(Deserialize, Serialize, Debug)]
 pub(crate) struct Label {
     name: String,
-    #[serde(default = "default_string_value")]
-    description: String,
-    #[serde(default = "default_string_value")]
     color: String,
+    #[serde(deserialize_with = "parse_description")]
+    description: String,
 }
 
-fn default_string_value() -> String {
-    "".to_string()
+fn parse_description<'de, D>(d: D) -> Result<String, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    Deserialize::deserialize(d).map(|x: Option<_>| x.unwrap_or("".to_string()))
 }
