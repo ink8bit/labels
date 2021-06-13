@@ -30,7 +30,7 @@
     {
       "name": "stale",
       "description": "No activity on this issue or pull request",
-      "color": "ededed"
+      "color": "E42570"
     },
     {
       "name": "workflow",
@@ -51,6 +51,11 @@
       "name": "gitignore",
       "description": ".gitignore file changes",
       "color": "4424E2"
+    },
+    {
+      "name": "readme",
+      "description": "README file updates",
+      "color": "0052CC"
     }
   ]
 }
