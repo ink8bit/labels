@@ -9,9 +9,19 @@ use std::{
 use crate::label::{error::LabelsError, Label};
 
 const AUTH_HEADER: &str = "x-oauth-basic";
+
+/// An accept header you should provide in order to use GitHub API.
+/// Read more in [docs](https://docs.github.com/en/rest/overview/resources-in-the-rest-api#current-version).
 const ACCEPT_HEADER: &str = "application/vnd.github.v3+json";
+
+/// User agent you should provide in oreder to use GitHub API.
+/// Read more in [docs](https://docs.github.com/en/rest/overview/resources-in-the-rest-api#user-agent-required).
 const USER_AGENT_HEADER: &str = "labels";
+
+/// GitHub API base url.
 const API_URL: &str = "https://api.github.com";
+
+/// An environment variable with your personal access token.
 const LABELS_TOKEN: &str = "LABELS_TOKEN";
 
 pub(crate) struct GitHub<'a> {
