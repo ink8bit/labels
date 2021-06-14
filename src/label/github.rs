@@ -24,6 +24,7 @@ impl<'a> GitHub<'a> {
         Self { owner, repo }
     }
 
+    /// Create GitHub client.
     fn client() -> Result<Client, reqwest::Error> {
         let timeout = Duration::from_secs(3);
 
@@ -42,6 +43,8 @@ impl<'a> GitHub<'a> {
         Ok(client)
     }
 
+    /// Get all labels for a repository.
+    /// See usage in [GitHub REST API docs](https://docs.github.com/en/rest/reference/issues#list-labels-for-a-repository).
     async fn labels(&self) -> Result<Vec<Label>, LabelsError> {
         let token = env::var(LABELS_TOKEN)?;
 
@@ -72,6 +75,7 @@ impl<'a> GitHub<'a> {
         Ok(labels)
     }
 
+    /// Print the first 100 labels to stdout.
     pub(crate) async fn print_labels(&self) -> Result<String, LabelsError> {
         let labels = Self::labels(&self).await?;
         let pretty = serde_json::to_string_pretty(&labels)?;
@@ -79,6 +83,8 @@ impl<'a> GitHub<'a> {
         Ok(pretty)
     }
 
+    /// Create a label.
+    /// See usage in [GitHub REST API docs](https://docs.github.com/en/rest/reference/issues#create-a-label).
     async fn create_label(&self, label: &Label) -> Result<(), LabelsError> {
         let token = env::var(LABELS_TOKEN)?;
 
@@ -105,6 +111,8 @@ impl<'a> GitHub<'a> {
         Ok(())
     }
 
+    /// Delete a label.
+    /// See usage in [GitHub REST API docs](https://docs.github.com/en/rest/reference/issues#delete-a-label).
     async fn delete_label(&self, name: &str) -> Result<(), LabelsError> {
         let token = env::var(LABELS_TOKEN)?;
 
@@ -131,6 +139,10 @@ impl<'a> GitHub<'a> {
         Ok(())
     }
 
+    /// Update all labels in a repository.
+    ///
+    /// `update_labels` removes all labels from a repostiory and
+    /// after that creates all labels from your config file.
     pub(crate) async fn update_labels(
         &self,
         labels_from_config: &[Label],
