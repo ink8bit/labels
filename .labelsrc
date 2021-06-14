@@ -56,6 +56,11 @@
       "name": "readme",
       "description": "README file updates",
       "color": "0052CC"
+    },
+    {
+      "name": "crate",
+      "description": "Changes in Cargo.toml",
+      "color": "D8C4AF"
     }
   ]
 }
