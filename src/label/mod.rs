@@ -12,9 +12,9 @@ pub(crate) struct Label {
     description: String,
 }
 
-fn parse_description<'de, D>(d: D) -> Result<String, D::Error>
+fn parse_description<'a, D>(d: D) -> Result<String, D::Error>
 where
-    D: Deserializer<'de>,
+    D: Deserializer<'a>,
 {
     Deserialize::deserialize(d).map(|x: Option<_>| x.unwrap_or("".to_string()))
 }
