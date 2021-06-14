@@ -8,6 +8,7 @@ use std::{
 
 use crate::label::{error::LabelsError, Label};
 
+/// An authorization header.
 const AUTH_HEADER: &str = "x-oauth-basic";
 
 /// An accept header you should provide in order to use GitHub API.
@@ -30,6 +31,12 @@ pub(crate) struct GitHub<'a> {
 }
 
 impl<'a> GitHub<'a> {
+    /// Create a new GitHub instance.
+    ///
+    /// # Arguments
+    ///
+    /// - `owner` - a repository owner,
+    /// - `repo` - a repo name.
     pub(crate) fn new(owner: &'a str, repo: &'a str) -> Self {
         Self { owner, repo }
     }
@@ -95,6 +102,10 @@ impl<'a> GitHub<'a> {
 
     /// Create a label.
     /// See usage in [GitHub REST API docs](https://docs.github.com/en/rest/reference/issues#create-a-label).
+    ///
+    /// # Arguments
+    ///
+    /// - `label` - a label struct with name, description, and color values.
     async fn create_label(&self, label: &Label) -> Result<(), LabelsError> {
         let token = env::var(LABELS_TOKEN)?;
 
@@ -123,6 +134,10 @@ impl<'a> GitHub<'a> {
 
     /// Delete a label.
     /// See usage in [GitHub REST API docs](https://docs.github.com/en/rest/reference/issues#delete-a-label).
+    ///
+    /// # Arguments
+    ///
+    /// - `name` - a name of the specific label.
     async fn delete_label(&self, name: &str) -> Result<(), LabelsError> {
         let token = env::var(LABELS_TOKEN)?;
 
@@ -153,6 +168,10 @@ impl<'a> GitHub<'a> {
     ///
     /// `update_labels` removes all labels from a repostiory and
     /// after that creates all labels from your config file.
+    ///
+    /// # Arguments
+    ///
+    /// - `labels_from_config` - a list of labels from your configuration file.
     pub(crate) async fn update_labels(
         &self,
         labels_from_config: &[Label],
