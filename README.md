@@ -4,6 +4,30 @@
 
 `labels` is a CLI utility to synchornize your labels in a specific GitHub repo.
 
+## Installation
+
+> At this time `labels` is only available from GitHub. I'll publish it on crates.io later.
+
+You can install labels via several ways.
+
+### Using repo url
+
+```console
+cargo install --git https://github.com/ink8bit/labels
+```
+
+### Using repo url with a specific tag
+
+```console
+cargo install --git https://github.com/ink8bit/labels --tag v0.1.0
+```
+
+### Using repo url with a specific branch
+
+```console
+cargo install --git https://github.com/ink8bit/labels --branch main
+```
+
 ## Setup
 
 ### Config file
