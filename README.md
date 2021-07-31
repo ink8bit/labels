@@ -70,8 +70,7 @@ Emoji can be added to label names, using either native emoji or colon-style mark
 
 You should create a [personal access token](https://docs.github.com/en/github/authenticating-to-github/keeping-your-account-and-data-secure/creating-a-personal-access-token) using GitHub UI with scope values:
 
-- `public_repo`
-- `repo:status`
+- `repo`
 - `read:user`
 
 And export your token as an environment variable in your `.zshrc` (or `.bashrc`):
