@@ -94,7 +94,7 @@ impl<'a> GitHub<'a> {
 
     /// Print the first 100 labels to stdout.
     pub(crate) async fn print_labels(&self) -> Result<String, LabelsError> {
-        let labels = Self::labels(&self).await?;
+        let labels = Self::labels(self).await?;
         let pretty = serde_json::to_string_pretty(&labels)?;
 
         Ok(pretty)
@@ -176,18 +176,18 @@ impl<'a> GitHub<'a> {
         &self,
         labels_from_config: &[Label],
     ) -> Result<(), LabelsError> {
-        let labels = Self::labels(&self).await?;
+        let labels = Self::labels(self).await?;
 
         if !labels.is_empty() {
             for label in labels {
-                if Self::delete_label(&self, &label.name).await.is_err() {
+                if Self::delete_label(self, &label.name).await.is_err() {
                     return Err(LabelsError::GitHubLabelDelete);
                 }
             }
         }
 
         for label in labels_from_config {
-            if Self::create_label(&self, label).await.is_err() {
+            if Self::create_label(self, label).await.is_err() {
                 return Err(LabelsError::GitHubLabelCreate);
             }
         }
