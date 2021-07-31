@@ -15,4 +15,9 @@ pub(crate) fn app() -> App<'static> {
                 .version(crate_version!())
                 .about("Updates all labels in current repository"),
         )
+        .subcommand(
+            App::new("remove")
+                .version(crate_version!())
+                .about("Removes all labels in current repository"),
+        )
 }

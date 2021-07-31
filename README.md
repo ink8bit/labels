@@ -93,10 +93,13 @@ FLAGS:
 SUBCOMMANDS:
     help      Prints this message or the help of the given subcommand(s)
     list      Prints labels in current repository (first 100 items)
+    remove    Removes all labels in current repository
     update    Updates all labels in current repository
 ```
 
 ## Subcommands
+
+## list
 
 Print the first 100 labels from the current repo:
 
@@ -104,8 +107,18 @@ Print the first 100 labels from the current repo:
 labels list
 ```
 
+## update
+
 Update all labels from the current repo:
 
 ```console
 labels update
+```
+
+## remove
+
+Remove all labels from the current repo:
+
+```console
+labels remove
 ```

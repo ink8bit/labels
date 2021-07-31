@@ -11,8 +11,9 @@ async fn main() {
     let args = cli::app().get_matches();
     let list = args.is_present("list");
     let update = args.is_present("update");
+    let remove = args.is_present("remove");
 
-    if !list && !update {
+    if !list && !update && !remove {
         if let Err(e) = cli::app().print_help() {
             return eprintln!("{}", e);
         }
@@ -20,7 +21,7 @@ async fn main() {
 
     let config = match Config::new() {
         Ok(v) => v,
-        Err(e) => return eprintln!("{}", e),
+        Err(_) => return eprintln!("Error: no config file found"),
     };
 
     let repo = config.repo;
@@ -54,6 +55,24 @@ async fn main() {
         match gh.update_labels(&config.labels).await {
             Ok(_) => {
                 let msg = format!("Successfully updated labels in repo '{}'", repo);
+                sp.text(msg);
+                sp.done();
+            }
+            Err(e) => {
+                let err_msg = format!("Error: {}", e);
+                sp.text(err_msg);
+                sp.error();
+            }
+        }
+    }
+
+    if remove {
+        let msg = format!("Removing all labels from repo '{}'", repo);
+        let sp = create_spinner(&msg);
+
+        match gh.remove_labels().await {
+            Ok(_) => {
+                let msg = format!("Successfully removed all labels in repo '{}'", repo);
                 sp.text(msg);
                 sp.done();
             }
