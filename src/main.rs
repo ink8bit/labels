@@ -40,7 +40,7 @@ async fn main() {
                 println!("{}", labels);
             }
             Err(e) => {
-                let err_msg = format!("Error: {}", e).to_string();
+                let err_msg = format!("Error: {}", e);
                 sp.text(err_msg);
                 sp.error();
             }
@@ -58,7 +58,7 @@ async fn main() {
                 sp.done();
             }
             Err(e) => {
-                let err_msg = format!("Error: {}", e).to_string();
+                let err_msg = format!("Error: {}", e);
                 sp.text(err_msg);
                 sp.error();
             }
@@ -68,6 +68,5 @@ async fn main() {
 
 fn create_spinner(msg: &str) -> SpinnerHandle {
     let formatted = format!(" {}", msg);
-    let sp = SpinnerBuilder::new().spinner(&DOTS).text(formatted).start();
-    sp
+    SpinnerBuilder::new().spinner(&DOTS).text(formatted).start()
 }
