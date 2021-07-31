@@ -30,8 +30,10 @@ It should be a valid JSON with the following structure:
 }
 ```
 
-#### Note:
+#### Note
+
 Emoji can be added to label names, using either native emoji or colon-style markup. For example, typing `:beetle:` will render the emoji :beetle:. For a full list of available emoji and codes, see "[Emoji cheat sheet.](https://github.com/ikatyang/emoji-cheat-sheet)".
+
 ```json
 {
   "name": ":beetle: bug",
@@ -40,12 +42,12 @@ Emoji can be added to label names, using either native emoji or colon-style mark
 }
 ```
 
-
 ### Token
 
 You should create a [personal access token](https://docs.github.com/en/github/authenticating-to-github/keeping-your-account-and-data-secure/creating-a-personal-access-token) using GitHub UI with scope values:
 
-- `repo`
+- `public_repo`
+- `repo:status`
 - `read:user`
 
 And export your token as an environment variable in your `.zshrc` (or `.bashrc`):
