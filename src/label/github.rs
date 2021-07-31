@@ -194,4 +194,19 @@ impl<'a> GitHub<'a> {
 
         Ok(())
     }
+
+    /// Remove all labels from a specific repository.
+    pub(crate) async fn remove_labels(&self) -> Result<(), LabelsError> {
+        let labels = Self::labels(self).await?;
+
+        if !labels.is_empty() {
+            for label in labels {
+                if Self::delete_label(self, &label.name).await.is_err() {
+                    return Err(LabelsError::GitHubLabelDelete);
+                }
+            }
+        }
+
+        Ok(())
+    }
 }
