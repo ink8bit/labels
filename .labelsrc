@@ -38,11 +38,6 @@
       "color": "B3B160"
     },
     {
-      "name": "module",
-      "description": "Module files updates",
-      "color": "EE5642"
-    },
-    {
       "name": "license",
       "description": "License changes",
       "color": "1E3C42"
