@@ -6,7 +6,7 @@ use std::{
     time::Duration,
 };
 
-use crate::label::{error::LabelsError, Label};
+use crate::labels::{error::LabelsError, Label};
 
 /// An authorization header.
 const AUTH_HEADER: &str = "x-oauth-basic";
