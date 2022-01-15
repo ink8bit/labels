@@ -2,7 +2,7 @@
 name = "labels"
 version = "0.3.0"
 authors = ["ink8bit <ink8bit@users.noreply.github.com>"]
-edition = "2018"
+edition = "2021"
 
 publish = false
 description = "CLI utility to update labels in GitHub repo"
