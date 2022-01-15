@@ -1,10 +1,10 @@
 mod cli;
-mod label;
+mod labels;
 
 use terminal_spinners::{SpinnerBuilder, SpinnerHandle, DOTS};
 
-use label::config::Config;
-use label::github::GitHub;
+use labels::config::Config;
+use labels::github::GitHub;
 
 #[tokio::main]
 async fn main() {
