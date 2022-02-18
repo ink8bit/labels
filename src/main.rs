@@ -9,15 +9,6 @@ use labels::github::GitHub;
 #[tokio::main]
 async fn main() {
     let args = cli::app().get_matches();
-    let list = args.is_present("list");
-    let update = args.is_present("update");
-    let remove = args.is_present("remove");
-
-    if !list && !update && !remove {
-        if let Err(e) = cli::app().print_help() {
-            return eprintln!("{}", e);
-        }
-    }
 
     let config = match Config::new() {
         Ok(v) => v,
@@ -29,57 +20,62 @@ async fn main() {
 
     let gh = GitHub::new(&owner, &repo);
 
-    if list {
-        let msg = format!("Getting labels from repo '{}'...", repo);
-        let sp = create_spinner(&msg);
+    match args.subcommand() {
+        Some(("list", _)) => {
+            let msg = format!("Getting labels from repo '{}'...", repo);
+            let sp = create_spinner(&msg);
 
-        match gh.print_labels().await {
-            Ok(labels) => {
-                let msg = format!("Labels in repo '{}':", repo);
-                sp.text(msg);
-                sp.done();
-                println!("{}", labels);
-            }
-            Err(e) => {
-                let err_msg = format!("Error: {}", e);
-                sp.text(err_msg);
-                sp.error();
-            }
-        };
-    }
+            match gh.print_labels().await {
+                Ok(labels) => {
+                    let msg = format!("Labels in repo '{}':", repo);
+                    sp.text(msg);
+                    sp.done();
+                    println!("{}", labels);
+                }
+                Err(e) => {
+                    let err_msg = format!("Error: {}", e);
+                    sp.text(err_msg);
+                    sp.error();
+                }
+            };
+        }
+        Some(("update", _)) => {
+            let msg = format!("Updating labels in repo '{}'", repo);
+            let sp = create_spinner(&msg);
 
-    if update {
-        let msg = format!("Updating labels in repo '{}'", repo);
-        let sp = create_spinner(&msg);
-
-        match gh.update_labels(&config.labels).await {
-            Ok(_) => {
-                let msg = format!("Successfully updated labels in repo '{}'", repo);
-                sp.text(msg);
-                sp.done();
-            }
-            Err(e) => {
-                let err_msg = format!("Error: {}", e);
-                sp.text(err_msg);
-                sp.error();
+            match gh.update_labels(&config.labels).await {
+                Ok(_) => {
+                    let msg = format!("Successfully updated labels in repo '{}'", repo);
+                    sp.text(msg);
+                    sp.done();
+                }
+                Err(e) => {
+                    let err_msg = format!("Error: {}", e);
+                    sp.text(err_msg);
+                    sp.error();
+                }
             }
         }
-    }
+        Some(("remove", _)) => {
+            let msg = format!("Removing all labels from repo '{}'", repo);
+            let sp = create_spinner(&msg);
 
-    if remove {
-        let msg = format!("Removing all labels from repo '{}'", repo);
-        let sp = create_spinner(&msg);
-
-        match gh.remove_labels().await {
-            Ok(_) => {
-                let msg = format!("Successfully removed all labels in repo '{}'", repo);
-                sp.text(msg);
-                sp.done();
+            match gh.remove_labels().await {
+                Ok(_) => {
+                    let msg = format!("Successfully removed all labels in repo '{}'", repo);
+                    sp.text(msg);
+                    sp.done();
+                }
+                Err(e) => {
+                    let err_msg = format!("Error: {}", e);
+                    sp.text(err_msg);
+                    sp.error();
+                }
             }
-            Err(e) => {
-                let err_msg = format!("Error: {}", e);
-                sp.text(err_msg);
-                sp.error();
+        }
+        _ => {
+            if let Err(e) = cli::app().print_help() {
+                return eprintln!("{}", e);
             }
         }
     }
