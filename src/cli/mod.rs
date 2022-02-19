@@ -1,8 +1,8 @@
 use clap::{crate_authors, crate_description, crate_name, crate_version, Command};
 
-pub mod cmd;
+pub mod sub_cmd;
 
-use cmd::{list::list, remove::remove, update::update};
+use sub_cmd::{list::list, remove::remove, update::update};
 
 pub(crate) fn app() -> Command<'static> {
     Command::new(crate_name!())
