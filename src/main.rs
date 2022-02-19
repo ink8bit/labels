@@ -3,6 +3,8 @@ mod labels;
 
 use terminal_spinners::{SpinnerBuilder, SpinnerHandle, DOTS};
 
+use std::env;
+
 use cli::sub_cmd::{list::LIST_CMD, remove::REMOVE_CMD, update::UPDATE_CMD};
 use labels::config::Config;
 use labels::github::GitHub;
@@ -25,7 +27,12 @@ async fn main() {
     let repo = config.repo;
     let owner = config.owner;
 
-    let gh = match GitHub::new(API_URL.to_string(), LABELS_TOKEN.to_string()) {
+    let token = match env::var(LABELS_TOKEN) {
+        Ok(v) => v,
+        Err(_) => return eprintln!("LABELS_TOKEN not found"),
+    };
+
+    let gh = match GitHub::new(API_URL.to_string(), token) {
         Ok(v) => v,
         Err(e) => {
             return eprintln!("{}", e);
