@@ -3,6 +3,7 @@ mod labels;
 
 use terminal_spinners::{SpinnerBuilder, SpinnerHandle, DOTS};
 
+use cli::cmd::{list::LIST_CMD, remove::REMOVE_CMD, update::UPDATE_CMD};
 use labels::config::Config;
 use labels::github::GitHub;
 
@@ -32,7 +33,7 @@ async fn main() {
     };
 
     match args.subcommand() {
-        Some(("list", _)) => {
+        Some((LIST_CMD, _)) => {
             let msg = format!("Getting labels from repo '{}'...", repo);
             let sp = create_spinner(&msg);
 
@@ -50,7 +51,7 @@ async fn main() {
                 }
             };
         }
-        Some(("update", _)) => {
+        Some((UPDATE_CMD, _)) => {
             let msg = format!("Updating labels in repo '{}'", repo);
             let sp = create_spinner(&msg);
 
@@ -67,7 +68,7 @@ async fn main() {
                 }
             }
         }
-        Some(("remove", _)) => {
+        Some((REMOVE_CMD, _)) => {
             let msg = format!("Removing all labels from repo '{}'", repo);
             let sp = create_spinner(&msg);
 
