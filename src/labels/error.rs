@@ -8,6 +8,7 @@ pub(crate) enum LabelsError {
     Http,
     JsonSerialization,
     GitHubLabelCreate,
+    GitHubLabelUpdate,
     GitHubLabelDelete,
 }
 
@@ -20,6 +21,7 @@ impl fmt::Display for LabelsError {
             LabelsError::InvalidResponse => write!(f, "Invalid response"),
             LabelsError::JsonSerialization => write!(f, "Could not serialize labels data"),
             LabelsError::GitHubLabelCreate => write!(f, "Could not create a label"),
+            LabelsError::GitHubLabelUpdate => write!(f, "Could not update labels"),
             LabelsError::GitHubLabelDelete => write!(f, "Could not delete a label"),
             LabelsError::NoTokenValue => write!(f, "Could not get a token from LABELS_TOKEN env. Make sure you set LABELS_TOKEN env variable."),
         }
