@@ -1,10 +1,7 @@
 use reqwest::header::{self, ACCEPT, USER_AGENT};
 use reqwest::Client;
 
-use std::{
-    env::{self},
-    time::Duration,
-};
+use std::time::Duration;
 
 use crate::labels::{error::LabelsError, Label};
 
@@ -19,30 +16,20 @@ const ACCEPT_HEADER: &str = "application/vnd.github.v3+json";
 /// Read more in [docs](https://docs.github.com/en/rest/overview/resources-in-the-rest-api#user-agent-required).
 const USER_AGENT_HEADER: &str = "labels";
 
-/// GitHub API base url.
-const API_URL: &str = "https://api.github.com";
-
-/// An environment variable with your personal access token.
-const LABELS_TOKEN: &str = "LABELS_TOKEN";
-
-pub(crate) struct GitHub<'a> {
-    owner: &'a str,
-    repo: &'a str,
+pub(crate) struct GitHub {
+    base_url: String,
+    token: String,
+    client: Client,
 }
 
-impl<'a> GitHub<'a> {
-    /// Create a new GitHub instance.
+impl GitHub {
+    /// Create a new GitHub client.
     ///
     /// # Arguments
     ///
-    /// - `owner` - a repository owner,
-    /// - `repo` - a repo name.
-    pub(crate) fn new(owner: &'a str, repo: &'a str) -> Self {
-        Self { owner, repo }
-    }
-
-    /// Create GitHub client.
-    fn client() -> Result<Client, reqwest::Error> {
+    /// - `base_url` - base url for all requests
+    /// - `token` - authorization token
+    pub(crate) fn new(base_url: String, token: String) -> Result<Self, reqwest::Error> {
         let timeout = Duration::from_secs(3);
 
         let mut headers = header::HeaderMap::new();
@@ -57,26 +44,30 @@ impl<'a> GitHub<'a> {
             .default_headers(headers)
             .build()?;
 
-        Ok(client)
+        Ok(Self {
+            base_url,
+            token,
+            client,
+        })
     }
 
     /// Get all labels for a repository.
     /// See usage in [GitHub REST API docs](https://docs.github.com/en/rest/reference/issues#list-labels-for-a-repository).
-    async fn labels(&self) -> Result<Vec<Label>, LabelsError> {
-        let token = env::var(LABELS_TOKEN)?;
-
+    ///
+    /// - `owner` - owner of the repo.
+    /// - `repo` - repo name.
+    async fn labels(&self, owner: &str, repo: &str) -> Result<Vec<Label>, LabelsError> {
         let request_url = format!(
             "{base_url}/repos/{owner}/{repo}/labels",
-            base_url = API_URL,
-            owner = self.owner,
-            repo = self.repo,
+            base_url = self.base_url,
+            owner = owner,
+            repo = repo,
         );
 
-        let client = GitHub::client()?;
-
-        let response = client
+        let response = self
+            .client
             .get(request_url)
-            .basic_auth(token, Some(AUTH_HEADER))
+            .basic_auth(&self.token, Some(AUTH_HEADER))
             .send()
             .await?;
 
@@ -93,8 +84,14 @@ impl<'a> GitHub<'a> {
     }
 
     /// Print the first 100 labels to stdout.
-    pub(crate) async fn print_labels(&self) -> Result<String, LabelsError> {
-        let labels = Self::labels(self).await?;
+    /// - `owner` - owner of the repo.
+    /// - `repo` - repo name.
+    pub(crate) async fn print_labels(
+        &self,
+        owner: &str,
+        repo: &str,
+    ) -> Result<String, LabelsError> {
+        let labels = Self::labels(self, owner, repo).await?;
         let pretty = serde_json::to_string_pretty(&labels)?;
 
         Ok(pretty)
@@ -106,22 +103,26 @@ impl<'a> GitHub<'a> {
     /// # Arguments
     ///
     /// - `label` - a label struct with name, description, and color values.
-    async fn create_label(&self, label: &Label) -> Result<(), LabelsError> {
-        let token = env::var(LABELS_TOKEN)?;
-
+    /// - `owner` - owner of the repo.
+    /// - `repo` - repo name.
+    async fn create_label(
+        &self,
+        label: &Label,
+        owner: &str,
+        repo: &str,
+    ) -> Result<(), LabelsError> {
         let request_url = format!(
             "{base_url}/repos/{owner}/{repo}/labels",
-            base_url = API_URL,
-            owner = self.owner,
-            repo = self.repo,
+            base_url = self.base_url,
+            owner = owner,
+            repo = repo,
         );
 
-        let client = GitHub::client()?;
-
-        let response = client
+        let response = self
+            .client
             .post(request_url)
             .json(&label)
-            .basic_auth(token, Some(AUTH_HEADER))
+            .basic_auth(&self.token, Some(AUTH_HEADER))
             .send()
             .await?;
 
@@ -137,23 +138,22 @@ impl<'a> GitHub<'a> {
     ///
     /// # Arguments
     ///
-    /// - `name` - a name of the specific label.
-    async fn delete_label(&self, name: &str) -> Result<(), LabelsError> {
-        let token = env::var(LABELS_TOKEN)?;
-
+    /// - `name` - name of the specific label.
+    /// - `owner` - owner of the repo.
+    /// - `repo` - repo name.
+    async fn delete_label(&self, name: &str, owner: &str, repo: &str) -> Result<(), LabelsError> {
         let request_url = format!(
             "{base_url}/repos/{owner}/{repo}/labels/{name}",
-            base_url = API_URL,
-            owner = self.owner,
-            repo = self.repo,
+            base_url = self.base_url,
+            owner = owner,
+            repo = repo,
             name = name,
         );
 
-        let client = GitHub::client()?;
-
-        let response = client
+        let response = self
+            .client
             .delete(request_url)
-            .basic_auth(token, Some(AUTH_HEADER))
+            .basic_auth(&self.token, Some(AUTH_HEADER))
             .send()
             .await?;
 
@@ -172,22 +172,31 @@ impl<'a> GitHub<'a> {
     /// # Arguments
     ///
     /// - `labels_from_config` - a list of labels from your configuration file.
+    /// - `owner` - owner of the repo.
+    /// - `repo` - repo name.
     pub(crate) async fn update_labels(
         &self,
         labels_from_config: &[Label],
+        owner: &str,
+        repo: &str,
     ) -> Result<(), LabelsError> {
-        let labels = Self::labels(self).await?;
+        let labels = Self::labels(self, owner, repo).await?;
 
-        if !labels.is_empty() {
-            for label in labels {
-                if Self::delete_label(self, &label.name).await.is_err() {
-                    return Err(LabelsError::GitHubLabelDelete);
-                }
+        if labels.is_empty() {
+            return Err(LabelsError::GitHubLabelUpdate);
+        }
+
+        for label in labels {
+            if Self::delete_label(self, &label.name, owner, repo)
+                .await
+                .is_err()
+            {
+                return Err(LabelsError::GitHubLabelDelete);
             }
         }
 
         for label in labels_from_config {
-            if Self::create_label(self, label).await.is_err() {
+            if Self::create_label(self, label, owner, repo).await.is_err() {
                 return Err(LabelsError::GitHubLabelCreate);
             }
         }
@@ -196,12 +205,20 @@ impl<'a> GitHub<'a> {
     }
 
     /// Remove all labels from a specific repository.
-    pub(crate) async fn remove_labels(&self) -> Result<(), LabelsError> {
-        let labels = Self::labels(self).await?;
+    ///
+    /// # Arguments
+    ///
+    /// - `owner` - owner of the repo.
+    /// - `repo` - repo name.
+    pub(crate) async fn remove_labels(&self, owner: &str, repo: &str) -> Result<(), LabelsError> {
+        let labels = Self::labels(self, owner, repo).await?;
 
         if !labels.is_empty() {
             for label in labels {
-                if Self::delete_label(self, &label.name).await.is_err() {
+                if Self::delete_label(self, &label.name, owner, repo)
+                    .await
+                    .is_err()
+                {
                     return Err(LabelsError::GitHubLabelDelete);
                 }
             }

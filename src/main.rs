@@ -6,6 +6,12 @@ use terminal_spinners::{SpinnerBuilder, SpinnerHandle, DOTS};
 use labels::config::Config;
 use labels::github::GitHub;
 
+/// GitHub API base url.
+const API_URL: &str = "https://api.github.com";
+
+/// An environment variable with your personal access token.
+const LABELS_TOKEN: &str = "LABELS_TOKEN";
+
 #[tokio::main]
 async fn main() {
     let args = cli::app().get_matches();
@@ -18,14 +24,19 @@ async fn main() {
     let repo = config.repo;
     let owner = config.owner;
 
-    let gh = GitHub::new(&owner, &repo);
+    let gh = match GitHub::new(API_URL.to_string(), LABELS_TOKEN.to_string()) {
+        Ok(v) => v,
+        Err(e) => {
+            return eprintln!("{}", e);
+        }
+    };
 
     match args.subcommand() {
         Some(("list", _)) => {
             let msg = format!("Getting labels from repo '{}'...", repo);
             let sp = create_spinner(&msg);
 
-            match gh.print_labels().await {
+            match gh.print_labels(&owner, &repo).await {
                 Ok(labels) => {
                     let msg = format!("Labels in repo '{}':", repo);
                     sp.text(msg);
@@ -43,7 +54,7 @@ async fn main() {
             let msg = format!("Updating labels in repo '{}'", repo);
             let sp = create_spinner(&msg);
 
-            match gh.update_labels(&config.labels).await {
+            match gh.update_labels(&config.labels, &owner, &repo).await {
                 Ok(_) => {
                     let msg = format!("Successfully updated labels in repo '{}'", repo);
                     sp.text(msg);
@@ -60,7 +71,7 @@ async fn main() {
             let msg = format!("Removing all labels from repo '{}'", repo);
             let sp = create_spinner(&msg);
 
-            match gh.remove_labels().await {
+            match gh.remove_labels(&owner, &repo).await {
                 Ok(_) => {
                     let msg = format!("Successfully removed all labels in repo '{}'", repo);
                     sp.text(msg);
