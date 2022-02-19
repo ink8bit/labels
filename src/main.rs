@@ -3,7 +3,7 @@ mod labels;
 
 use terminal_spinners::{SpinnerBuilder, SpinnerHandle, DOTS};
 
-use cli::cmd::{list::LIST_CMD, remove::REMOVE_CMD, update::UPDATE_CMD};
+use cli::sub_cmd::{list::LIST_CMD, remove::REMOVE_CMD, update::UPDATE_CMD};
 use labels::config::Config;
 use labels::github::GitHub;
 
