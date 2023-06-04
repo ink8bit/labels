@@ -9,6 +9,7 @@ pub(crate) fn app() -> Command {
         .version(crate_version!())
         .about(crate_description!())
         .author(crate_authors!())
+        .arg_required_else_help(true)
         .subcommand(list())
         .subcommand(update())
         .subcommand(remove())
