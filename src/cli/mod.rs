@@ -4,7 +4,7 @@ pub mod sub_cmd;
 
 use sub_cmd::{list::list, remove::remove, update::update};
 
-pub(crate) fn app() -> Command<'static> {
+pub(crate) fn app() -> Command {
     Command::new(crate_name!())
         .version(crate_version!())
         .about(crate_description!())
