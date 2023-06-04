@@ -16,5 +16,5 @@ fn parse_description<'a, D>(d: D) -> Result<String, D::Error>
 where
     D: Deserializer<'a>,
 {
-    Deserialize::deserialize(d).map(|x: Option<_>| x.unwrap_or_else(|| "".to_string()))
+    Deserialize::deserialize(d).map(|x: Option<_>| x.unwrap_or_default())
 }

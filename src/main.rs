@@ -38,12 +38,12 @@ async fn main() {
     };
 
     match args.subcommand() {
-        Some((LIST_CMD, _)) => return print_labels(gh, owner, repo).await,
-        Some((UPDATE_CMD, _)) => return update_labels(gh, config).await,
-        Some((REMOVE_CMD, _)) => return remove_labels(gh, owner, repo).await,
+        Some((LIST_CMD, _)) => print_labels(gh, owner, repo).await,
+        Some((UPDATE_CMD, _)) => update_labels(gh, config).await,
+        Some((REMOVE_CMD, _)) => remove_labels(gh, owner, repo).await,
         _ => {
             if let Err(e) = cli::app().print_help() {
-                return eprintln!("{}", e);
+                eprintln!("{}", e);
             }
         }
     }
@@ -58,7 +58,7 @@ async fn print_labels(gh: labels::github::GitHub, owner: &str, repo: &str) {
     let msg = format!("Getting labels from repo '{}'...", repo);
     let sp = create_spinner(&msg);
 
-    match gh.print_labels(&owner, &repo).await {
+    match gh.print_labels(owner, repo).await {
         Ok(labels) => {
             let msg = format!("Labels in repo '{}':", repo);
             sp.text(msg);
@@ -98,7 +98,7 @@ async fn remove_labels(gh: labels::github::GitHub, owner: &str, repo: &str) {
     let msg = format!("Removing all labels from repo '{}'", repo);
     let sp = create_spinner(&msg);
 
-    match gh.remove_labels(&owner, &repo).await {
+    match gh.remove_labels(owner, repo).await {
         Ok(_) => {
             let msg = format!("Successfully removed all labels in repo '{}'", repo);
             sp.text(msg);
