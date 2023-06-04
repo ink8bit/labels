@@ -1,9 +1,7 @@
-use clap::{crate_version, Command};
+use clap::Command;
 
 pub(crate) const REMOVE_CMD: &str = "remove";
 
-pub(crate) fn remove() -> Command<'static> {
-    Command::new(REMOVE_CMD)
-        .version(crate_version!())
-        .about("Remove all labels in current repository")
+pub(crate) fn remove() -> Command {
+    Command::new(REMOVE_CMD).about("Remove all labels in current repository")
 }
