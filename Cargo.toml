@@ -16,3 +16,7 @@ serde = { version = "1.0.163", features = ["derive"] }
 reqwest = { version = "0.11.18", features = ["json"] }
 tokio = { version = "1.16.1", features = ["full"] }
 terminal-spinners = "0.3.2"
+
+# https://doc.rust-lang.org/cargo/reference/specifying-dependencies.html#build-dependencies
+[target.'cfg(unix)'.build-dependencies]
+openssl = { version = "0.10.54", features = ["vendored"] }
