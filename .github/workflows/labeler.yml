@@ -18,4 +18,5 @@ jobs:
     steps:
     - uses: actions/labeler@v5
       with:
+        # Whether or not to remove labels when matching files are reverted or no longer changed by the PR
         sync-labels: true
