@@ -12,7 +12,7 @@ description = "CLI utility to update labels in GitHub repo"
 [dependencies]
 clap = { version = "4.5.4", features = ["cargo", "deprecated"] }
 serde_json = "1.0.117"
-serde = { version = "1.0.201", features = ["derive"] }
+serde = { version = "1.0.202", features = ["derive"] }
 reqwest = { version = "0.12.4", features = ["json"] }
 tokio = { version = "1.37.0", features = ["full"] }
 terminal-spinners = "0.3.2"
