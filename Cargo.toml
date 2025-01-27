@@ -19,4 +19,4 @@ terminal-spinners = "0.3.2"
 
 # https://doc.rust-lang.org/cargo/reference/specifying-dependencies.html#build-dependencies
 [target.'cfg(unix)'.build-dependencies]
-openssl = { version = "0.10.68", features = ["vendored"] }
+openssl = { version = "0.10.69", features = ["vendored"] }
